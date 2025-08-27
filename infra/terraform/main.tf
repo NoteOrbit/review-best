@@ -9,25 +9,25 @@ terraform {
 
 provider "databricks" {
   host = var.databricks_host
-  // token = var.databricks_token # Using a Service Principal is recommended for CI/CD
+  token = var.databricks_token
 }
 
 locals {
   domains = {
     users = {
-      ingest_notebook    = "/Shared/notebooks/users/ingest", // Use workspace paths
-      transform_notebook = "/Shared/notebooks/users/transform",
-      load_notebook      = "/Shared/notebooks/users/load"
+      ingest_notebook    = "/Shared/review-best/notebooks/users/ingest", // Use workspace paths
+      transform_notebook = "/Shared/review-best/notebooks/users/transform",
+      load_notebook      = "/Shared/review-best/notebooks/users/load"
     },
     products = {
-      ingest_notebook    = "/Shared/notebooks/products/ingest",
-      transform_notebook = "/Shared/notebooks/products/transform",
-      load_notebook      = "/Shared/notebooks/products/load"
+      ingest_notebook    = "/Shared/review-best/notebooks/products/ingest",
+      transform_notebook = "/Shared/review-best/notebooks/products/transform",
+      load_notebook      = "/Shared/review-best/notebooks/products/load"
     },
     orders = {
-      ingest_notebook    = "/Shared/notebooks/orders/ingest",
-      transform_notebook = "/Shared/notebooks/orders/transform",
-      load_notebook      = "/Shared/notebooks/orders/load"
+      ingest_notebook    = "/Shared/review-best/notebooks/orders/ingest",
+      transform_notebook = "/Shared/review-best/notebooks/orders/transform",
+      load_notebook      = "/Shared/review-best/notebooks/orders/load"
     }
   }
 }
@@ -41,7 +41,7 @@ resource "databricks_job" "pipeline" {
   # Define tasks for the job
   task {
     task_key = "ingest"
-    job_cluster_key = "default_cluster" // Use the same cluster for all tasks
+    job_cluster_key = "serverless_cluster"
     notebook_task {
       notebook_path = each.value.ingest_notebook
     }
@@ -49,7 +49,7 @@ resource "databricks_job" "pipeline" {
 
   task {
     task_key = "transform"
-    job_cluster_key = "default_cluster"
+    job_cluster_key = "serverless_cluster"
     notebook_task {
       notebook_path = each.value.transform_notebook
     }
@@ -61,7 +61,7 @@ resource "databricks_job" "pipeline" {
 
   task {
     task_key = "load"
-    job_cluster_key = "default_cluster"
+    job_cluster_key = "serverless_cluster"
     notebook_task {
       notebook_path = each.value.load_notebook
     }
