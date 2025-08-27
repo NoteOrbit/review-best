@@ -1,0 +1,32 @@
+name: "Terraform Databricks Pipeline"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./infra/terraform
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: ./infra/terraform
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: ./infra/terraform
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
