@@ -39,10 +39,10 @@ locals {
   notebook_map = {
     for notebook in flatten([
       for domain_key, domain_value in local.domains : [
-        # Go up two levels (../../) to find the src folder
-        { key = "${domain_key}_ingest",    source = "${path.module}/../../src/notebooks/${domain_key}/ingest.py",    target = domain_value.ingest_notebook_path },
-        { key = "${domain_key}_transform", source = "${path.module}/../../src/notebooks/${domain_key}/transform.py", target = domain_value.transform_notebook_path },
-        { key = "${domain_key}_load",      source = "${path.module}/../../src/notebooks/${domain_key}/load.py",      target = domain_value.load_notebook_path }
+        
+        { key = "${domain_key}_ingest",    source = "${path.module}/../../src/notebooks/${domain_key}/ingest.ipynb",    target = domain_value.ingest_notebook_path },
+        { key = "${domain_key}_transform", source = "${path.module}/../../src/notebooks/${domain_key}/transform.ipynb", target = domain_value.transform_notebook_path },
+        { key = "${domain_key}_load",      source = "${path.module}/../../src/notebooks/${domain_key}/load.ipynb",      target = domain_value.load_notebook_path }
       ]
     ]) : notebook.key => {
       source = notebook.source
