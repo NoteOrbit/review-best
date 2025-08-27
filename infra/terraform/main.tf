@@ -41,7 +41,6 @@ resource "databricks_job" "pipeline" {
   # Define tasks for the job
   task {
     task_key = "ingest"
-    job_cluster_key = "serverless_cluster"
     notebook_task {
       notebook_path = each.value.ingest_notebook
     }
@@ -49,7 +48,6 @@ resource "databricks_job" "pipeline" {
 
   task {
     task_key = "transform"
-    job_cluster_key = "serverless_cluster"
     notebook_task {
       notebook_path = each.value.transform_notebook
     }
@@ -61,7 +59,6 @@ resource "databricks_job" "pipeline" {
 
   task {
     task_key = "load"
-    job_cluster_key = "serverless_cluster"
     notebook_task {
       notebook_path = each.value.load_notebook
     }
