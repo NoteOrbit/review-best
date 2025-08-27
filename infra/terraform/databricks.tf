@@ -1,18 +1,19 @@
-
-resource "databricks_notebook" "ingest_notebook" {
-  path      = "/Shared/notebooks/ingest.py"
-  language  = "PYTHON"
-  content_base64 = filebase64("${path.module}/../notebooks/ingest.py")
+locals {
+  # Define all your notebooks in one place
+  notebooks = {
+    ingest    = "ingest.py",
+    transform = "transform.py",
+    load      = "load.py"
+  }
 }
 
-resource "databricks_notebook" "transform_notebook" {
-  path      = "/Shared/notebooks/transform.py"
-  language  = "PYTHON"
-  content_base64 = filebase64("${path.module}/../notebooks/transform.py")
-}
+resource "databricks_notebook" "pipeline_notebooks" {
+  for_each = local.notebooks
 
-resource "databricks_notebook" "load_notebook" {
-  path      = "/Shared/notebooks/load.py"
-  language  = "PYTHON"
-  content_base64 = filebase64("${path.module}/../notebooks/load.py")
+  # The 'source' attribute is simpler than 'content_base64'
+  # This path assumes your 'notebooks' folder is one level above your terraform files.
+  source = "${path.module}/../notebooks/${each.value}"
+  
+  # The path where the notebook will be created in the Databricks workspace
+  path     = "/Shared/notebooks/${each.value}"
 }
