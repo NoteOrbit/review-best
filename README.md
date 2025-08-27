@@ -34,6 +34,7 @@ src/
       load.py
   scripts/
     generate_data.py
+.gitignore
 requirements.txt
 README.md
 ```
