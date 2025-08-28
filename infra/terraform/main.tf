@@ -14,28 +14,24 @@ provider "databricks" {
 }
 
 locals {
-  # โครงสร้างสำหรับสร้าง Job ยังคงเดิม
-  domains = {
+domains = {
     users = {
-      ingest_notebook_path    = "/Shared/review-best/notebooks/users/ingest"
-      transform_notebook_path = "/Shared/review-best/notebooks/users/transform"
-      load_notebook_path      = "/Shared/review-best/notebooks/users/load"
+      ingest_notebook_path    = "/Shared/review-best/notebooks/users/ingest.ipynb"
+      transform_notebook_path = "/Shared/review-best/notebooks/users/transform.ipynb"
+      load_notebook_path      = "/Shared/review-best/notebooks/users/load.ipynb"
     },
     products = {
-      ingest_notebook_path    = "/Shared/review-best/notebooks/products/ingest"
-      transform_notebook_path = "/Shared/review-best/notebooks/products/transform"
-      load_notebook_path      = "/Shared/review-best/notebooks/products/load"
+      ingest_notebook_path    = "/Shared/review-best/notebooks/products/ingest.ipynb"
+      transform_notebook_path = "/Shared/review-best/notebooks/products/transform.ipynb"
+      load_notebook_path      = "/Shared/review-best/notebooks/products/load.ipynb"
     },
     orders = {
-      ingest_notebook_path    = "/Shared/review-best/notebooks/orders/ingest"
-      transform_notebook_path = "/Shared/review-best/notebooks/orders/transform"
-      load_notebook_path      = "/Shared/review-best/notebooks/orders/load"
+      ingest_notebook_path    = "/Shared/review-best/notebooks/orders/ingest.ipynb"
+      transform_notebook_path = "/Shared/review-best/notebooks/orders/transform.ipynb"
+      load_notebook_path      = "/Shared/review-best/notebooks/orders/load.ipynb"
     }
   }
 
-  # --> CHANGE 1: สร้าง Map ของ Notebook ทั้งหมดที่จะ upload
-  # เราจะสร้าง map ที่มี key ที่ไม่ซ้ำกัน (เช่น "users_ingest")
-  # และ value ที่มีทั้ง source file path และ target workspace path
   notebook_map = {
     for notebook in flatten([
       for domain_key, domain_value in local.domains : [
@@ -51,30 +47,24 @@ locals {
   }
 }
 
-# --> CHANGE 2: Upload Notebooks ทั้งหมดโดยใช้ for_each
-# Resource นี้จะสร้าง notebook object ใน databricks workspace ตาม map ที่เราสร้างไว้ข้างบน
 resource "databricks_notebook" "all" {
   for_each = local.notebook_map
   source = each.value.source
   path   = each.value.path
 }
 
-# สร้างหนึ่ง multi-task job สำหรับแต่ละ domain
 resource "databricks_job" "pipeline" {
   for_each = local.domains
 
   name = "${each.key}_pipeline"
   
-  # --> CHANGE 3: เชื่อมโยง Job กับ Notebook ที่ Upload ใหม่
-  # เราจะอ้างอิง .path attribute จาก resource "databricks_notebook.all"
-  # แทนการใช้ค่า hardcode จาก local.domains โดยตรง
   task {
     task_key = "ingest"
     notebook_task {
-      # อ้างอิงไปยัง notebook ที่ถูกสร้างโดย Terraform จาก key ที่ตรงกัน
+      
       notebook_path = databricks_notebook.all["${each.key}_ingest"].path
     }
-    # ใส่การตั้งค่า cluster หรือ job cluster ตามต้องการ
+    
   }
 
   task {
